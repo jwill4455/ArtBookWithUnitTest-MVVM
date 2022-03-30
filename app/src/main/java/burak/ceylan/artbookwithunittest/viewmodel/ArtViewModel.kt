@@ -10,6 +10,7 @@ import burak.ceylan.artbookwithunittest.repo.ArtRepositoryInterface
 import burak.ceylan.artbookwithunittest.roomdb.Art
 import burak.ceylan.artbookwithunittest.util.Resource
 import kotlinx.coroutines.launch
+import java.lang.Exception
 
 class ArtViewModel @ViewModelInject constructor(
     private val repository: ArtRepositoryInterface
@@ -48,8 +49,27 @@ class ArtViewModel @ViewModelInject constructor(
         repository.insertArt(art)
     }
 
-    fun searchForImage(searchString: String){
-        if (searchString.isEmpty()){
+    fun makeArt(name: String, artistName: String, year: String) {
+        if (name.isEmpty() || artistName.isEmpty() || year.isEmpty()) {
+            insertArtMsg.postValue(Resource.error("Enter name, artist, year", null))
+            return
+        }
+
+        val yearInt = try {
+            year.toInt()
+        } catch (e: Exception) {
+            insertArtMsg.postValue(Resource.error("Year should be a number", null))
+            return
+        }
+
+        val art = Art(name, artistName, yearInt, selectedImage.value ?: "")
+        insertArt(art)
+        setSelectedImage("")
+        insertArtMsg.postValue(Resource.success(art))
+    }
+
+    fun searchForImage(searchString: String) {
+        if (searchString.isEmpty()) {
             return
         }
         images.value = Resource.loading(null)
